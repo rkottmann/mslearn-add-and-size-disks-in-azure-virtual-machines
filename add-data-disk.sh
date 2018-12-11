@@ -19,19 +19,20 @@ p
 w
 EOF
 
+# Prepare avoiding incorrect disk from being mounted 
+# (/proc/sys/kernel/random/uuid available in Kernel >2.3 since ca. 2001)
+declare -r UUID=$(cat /proc/sys/kernel/random/uuid)
+
 # Write a file system to the partition.
 #  ext4 creates an ext4 filesystem.
 #  /dev/sdc1 is the device name.
-sudo mkfs -t ext4 /dev/sdc1
+sudo mkfs -t ext4 -U "${UUID}" /dev/sdc1
 
 # Create the /uploads directory, which we'll use as our mount point.
 sudo mkdir /uploads
 
 # Attach the disk to the mount point.
 sudo mount /dev/sdc1 /uploads
-
-# Get the UUID of the new drive, /dev/sdc1, and save it as a variable.
-UUID=$(sudo -i blkid | grep '/dev/sdc1' | perl -pe 's/.+([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}).+/$1/')
 
 # Add the UUID to /etc/fstab so that the drive is mounted automatically after reboot.
 # We use the UUID instead of the device name (/dev/sdc1) because the UUID avoids the incorrect 
